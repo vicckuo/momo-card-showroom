@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue'
 import CardRenderer from '../cards/CardRenderer.vue'
-import { listVariants } from '../cards/registry'
+import { getVariant, listVariants } from '../cards/registry'
+import type { CardInstance } from '../cards/schema'
 import { useCards } from '../persistence/useCards'
 
 const { cards, resetAll } = useCards()
@@ -10,6 +11,7 @@ const variants = listVariants()
 const visible = computed(() =>
   variantFilter.value === 'all' ? cards.value : cards.value.filter((c) => c.variant === variantFilter.value),
 )
+const spansTwo = (card: CardInstance) => getVariant(card.variant)?.gridSpan?.(card.options) === 2
 </script>
 
 <template>
@@ -25,7 +27,7 @@ const visible = computed(() =>
       <button type="button" @click="resetAll">全部重設</button>
     </div>
     <ul class="grid">
-      <li v-for="card in visible" :key="card.id" :class="{ 'grid__wide': card.options.layout === 'horizontal' }">
+      <li v-for="card in visible" :key="card.id" :class="{ 'grid__wide': spansTwo(card) }">
         <RouterLink :to="`/card/${card.id}`" class="grid__link">
           <CardRenderer :card="card" />
         </RouterLink>

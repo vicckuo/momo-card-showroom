@@ -8,7 +8,7 @@ export const standardOptionsSchema = z.object({
   accentColor: hexColorSchema,
   showOriginalPrice: z.boolean(),
   showMeta: z.boolean(),
-  tag: z.string(),
+  tag: z.string().max(10),
 })
 
 export type StandardOptions = z.infer<typeof standardOptionsSchema>
@@ -29,8 +29,9 @@ export const standardVariant: CardVariant<StandardOptions> = {
     accentColorField,
     { key: 'showOriginalPrice', label: '顯示原價', kind: 'boolean' },
     showMetaField,
-    { key: 'tag', label: '活動標籤（如：登記）', kind: 'text' },
+    { key: 'tag', label: '活動標籤（如：登記）', kind: 'text', maxLength: 10 },
   ],
   component: StandardCard,
   hiddenProductFields: hiddenWhenMetaOff,
+  gridSpan: (options) => (options.layout === 'horizontal' ? 2 : 1),
 }

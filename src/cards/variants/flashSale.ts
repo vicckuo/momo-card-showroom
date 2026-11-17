@@ -1,4 +1,5 @@
 import { z } from 'zod'
+import { LIMITS } from '../schema'
 import type { CardVariant } from '../registry'
 import { accentColorField, hexColorSchema, hiddenWhenMetaOff, showMetaField } from './shared'
 import FlashSaleCard from './FlashSaleCard.vue'
@@ -6,9 +7,9 @@ import FlashSaleCard from './FlashSaleCard.vue'
 /** 限時搶購卡：真站特徵為「限搶價」前綴、折數、「最後 N 組」稀缺提示。 */
 export const flashSaleOptionsSchema = z.object({
   accentColor: hexColorSchema,
-  priceLabel: z.string(),
-  remaining: z.number().int().nonnegative(),
-  lowStockThreshold: z.number().int().nonnegative(),
+  priceLabel: z.string().max(10),
+  remaining: z.number().int().nonnegative().max(LIMITS.stock),
+  lowStockThreshold: z.number().int().nonnegative().max(LIMITS.stock),
   showDiscount: z.boolean(),
   showMeta: z.boolean(),
 })
@@ -29,9 +30,9 @@ export const flashSaleVariant: CardVariant<FlashSaleOptions> = {
   },
   fields: [
     accentColorField,
-    { key: 'priceLabel', label: '價格標示', kind: 'text' },
-    { key: 'remaining', label: '剩餘組數', kind: 'number', min: 0 },
-    { key: 'lowStockThreshold', label: '低庫存門檻', kind: 'number', min: 0 },
+    { key: 'priceLabel', label: '價格標示', kind: 'text', maxLength: 10 },
+    { key: 'remaining', label: '剩餘組數', kind: 'number', min: 0, max: LIMITS.stock },
+    { key: 'lowStockThreshold', label: '低庫存門檻', kind: 'number', min: 0, max: LIMITS.stock },
     { key: 'showDiscount', label: '顯示折數', kind: 'boolean' },
     showMetaField,
   ],

@@ -4,8 +4,9 @@ import { cardInstanceSchema, type CardInstance, type Product } from './schema'
 
 /** 編輯器欄位定義：編輯器依此自動產生控制項，新 variant 不用寫編輯器。 */
 export type FieldDef =
-  | { key: string; label: string; kind: 'text' }
-  | { key: string; label: string; kind: 'number'; min?: number; max?: number; optional?: boolean }
+  | { key: string; label: string; kind: 'text'; maxLength: number }
+  // 數字欄位必須宣告上下限：編輯器據此夾住輸入，不會出現無限增長的值
+  | { key: string; label: string; kind: 'number'; min: number; max: number; optional?: boolean }
   | { key: string; label: string; kind: 'boolean' }
   | { key: string; label: string; kind: 'select'; choices: readonly string[] }
   | { key: string; label: string; kind: 'color' }
@@ -19,6 +20,8 @@ export interface CardVariant<O extends Record<string, unknown> = Record<string, 
   component: Component
   /** 依目前選項，這張卡不會顯示哪些商品欄位。編輯器據此提示，避免「改了沒反應」。 */
   hiddenProductFields?: (options: O) => readonly (keyof Product)[]
+  /** 在列表格線上佔幾欄（如橫式卡佔 2 欄）。由 variant 決定，列表頁不需要懂各 variant 的選項。 */
+  gridSpan?: (options: O) => 1 | 2
 }
 
 const variants = new Map<string, CardVariant>()

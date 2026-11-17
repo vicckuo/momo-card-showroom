@@ -7,7 +7,7 @@ import RankingCard from './RankingCard.vue'
 export const rankingOptionsSchema = z.object({
   accentColor: hexColorSchema,
   rank: z.number().int().min(1).max(99),
-  categoryLabel: z.string(),
+  categoryLabel: z.string().max(20),
   showMeta: z.boolean(),
 })
 
@@ -21,7 +21,7 @@ export const rankingVariant: CardVariant<RankingOptions> = {
   fields: [
     accentColorField,
     { key: 'rank', label: '名次', kind: 'number', min: 1, max: 99 },
-    { key: 'categoryLabel', label: '類型標籤', kind: 'text' },
+    { key: 'categoryLabel', label: '類型標籤', kind: 'text', maxLength: 20 },
     showMetaField,
   ],
   component: RankingCard,

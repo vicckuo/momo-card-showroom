@@ -38,4 +38,9 @@ describe('card registry', () => {
     const bad = { ...seedCards[0], product: { ...seedCards[0].product, price: -1 } }
     expect(normalizeCard(bad)).toBeNull()
   })
+
+  it('rejects a saved price above the limit, so a tampered or legacy value never reaches the screen', () => {
+    const tooBig = { ...seedCards[0], product: { ...seedCards[0].product, price: Number.MAX_SAFE_INTEGER } }
+    expect(normalizeCard(tooBig)).toBeNull()
+  })
 })

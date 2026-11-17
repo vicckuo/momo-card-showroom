@@ -1,5 +1,5 @@
 import { readonly, ref } from 'vue'
-import type { CardInstance } from '../cards/schema'
+import type { CardInstance, CardPatch } from '../cards/schema'
 import { seedCards } from '../data/seed'
 import { browserStore, clearCards, loadCards, saveCards, subscribeToExternalChanges } from './storage'
 
@@ -32,7 +32,7 @@ function persist(next: CardInstance[]): void {
 export function useCards() {
   ensureLoaded()
 
-  function updateCard(id: string, patch: { product?: Partial<CardInstance['product']>; options?: Record<string, unknown> }): void {
+  function updateCard(id: string, patch: CardPatch): void {
     persist(
       cards.value.map((card) =>
         card.id === id
