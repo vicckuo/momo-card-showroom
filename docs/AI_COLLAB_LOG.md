@@ -27,6 +27,11 @@ commit 中 Agent 參與撰寫的都加上 `Co-authored-by: Claude`。
 | 15:50 | 人 | 要求跑一輪程式碼整理審查（`/simplify`） | — |
 | 15:50–15:53 | Agent | 開 4 個 sub-agent 平行審查（重用 / 簡化 / 效能 / 修正深度），合併重複意見後套用：<br>• 卡片類型改為 import 即註冊，`storage.ts` 讀取前保證已註冊——**reload bug 的根因在源頭修掉**，不只靠延遲載入<br>• 編輯器不再寫死 `showMeta` 與欄位名稱，改由 variant 宣告 `hiddenProductFields`<br>• 共用 localStorage 存取、zod 解析存檔、共用主題色 schema<br>• 多個 `<momo-card>` 共用解析結果，沒變的卡不重新渲染<br>略過：adoptedStyleSheets（需處理不支援的瀏覽器）、編輯存檔 debounce（輸入已是 change 事件，成本低）、字型 / 數字格式抽共用（價值低） | `7b1144d` |
 
+| 15:54 | 人 | 要求用全新、沒有對話脈絡的 agent 跑 `/code-review`（Standards + Spec 兩軸） | — |
+| 15:55–15:56 | Agent | 兩份報告分開呈現；Agent 查證後指出 Spec reviewer 的一條錯誤結論（「橫式版型沒實作」，其實有，grep 漏掉） | — |
+| 15:56 | 人 | 決定：寫 README、修兩個 code smell；**另外要求所有輸入欄位加上限，避免數字無限增長、超出 JS 安全整數範圍** | — |
+| 15:56–15:58 | Agent | 上限集中在 `LIMITS`，schema 與編輯器共用（存檔超限也會被擋）；數字欄位型別強制宣告 min/max、文字欄位強制 maxLength。另修 feature envy（variant 宣告 `gridSpan`）與 `CardPatch` 型別 | `d368cfe` |
+
 ### 這次協作的觀察
 - Agent 實作速度快，單元測試也都通過，但**單元測試是在「先註冊、再載入」的順序下跑的**，沒有涵蓋真實頁面的 import 順序。
 - Agent 的端對端驗證只走了「showroom → sample.html」這條路徑，漏掉「showroom 重新整理」。
