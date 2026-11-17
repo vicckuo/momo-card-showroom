@@ -9,6 +9,7 @@ export const flashSaleOptionsSchema = z.object({
   remaining: z.number().int().nonnegative(),
   lowStockThreshold: z.number().int().nonnegative(),
   showDiscount: z.boolean(),
+  showMeta: z.boolean(),
 })
 
 export type FlashSaleOptions = z.infer<typeof flashSaleOptionsSchema>
@@ -23,6 +24,7 @@ export const flashSaleVariant: CardVariant<FlashSaleOptions> = {
     remaining: 100,
     lowStockThreshold: 50,
     showDiscount: true,
+    showMeta: false,
   },
   fields: [
     { key: 'accentColor', label: '主題色', kind: 'color' },
@@ -30,6 +32,7 @@ export const flashSaleVariant: CardVariant<FlashSaleOptions> = {
     { key: 'remaining', label: '剩餘組數', kind: 'number', min: 0 },
     { key: 'lowStockThreshold', label: '低庫存門檻', kind: 'number', min: 0 },
     { key: 'showDiscount', label: '顯示折數', kind: 'boolean' },
+    { key: 'showMeta', label: '顯示評價 / 銷量', kind: 'boolean' },
   ],
   component: FlashSaleCard,
 }

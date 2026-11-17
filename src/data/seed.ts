@@ -49,7 +49,7 @@ export const seedCards: readonly CardInstance[] = [
       ratingCount: 0,
       salesLabel: '',
     },
-    options: { accentColor: '#e60012', priceLabel: '限搶價', remaining: 238, lowStockThreshold: 50, showDiscount: true },
+    options: { accentColor: '#e60012', priceLabel: '限搶價', remaining: 238, lowStockThreshold: 50, showDiscount: true, showMeta: false },
   },
   {
     id: 'pan-flash',
@@ -64,7 +64,7 @@ export const seedCards: readonly CardInstance[] = [
       ratingCount: 0,
       salesLabel: '',
     },
-    options: { accentColor: '#e60012', priceLabel: '限搶價', remaining: 66, lowStockThreshold: 100, showDiscount: true },
+    options: { accentColor: '#e60012', priceLabel: '限搶價', remaining: 66, lowStockThreshold: 100, showDiscount: true, showMeta: false },
   },
   {
     id: 'latte-ticket',

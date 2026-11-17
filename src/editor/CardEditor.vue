@@ -21,6 +21,17 @@ const productFields: readonly FieldDef[] = [
 
 const optionFields = computed(() => getVariant(props.card.variant)?.fields ?? [])
 
+/**
+ * 約定：評價數 / 銷量由每個 variant 的 showMeta 選項控制顯示。
+ * 關閉時在欄位旁提示，避免「改了資料卡片沒變」被誤以為沒存到。
+ */
+const META_FIELDS = new Set(['ratingCount', 'salesLabel'])
+function hiddenHint(field: FieldDef): string {
+  return META_FIELDS.has(field.key) && props.card.options.showMeta === false
+    ? '目前不顯示：請勾選下方「顯示評價 / 銷量」'
+    : ''
+}
+
 function readValue(source: Record<string, unknown>, field: FieldDef, event: Event): unknown {
   const input = event.target as HTMLInputElement
   if (field.kind === 'boolean') return input.checked
@@ -54,6 +65,7 @@ function onOption(field: FieldDef, event: Event) {
           :value="(card.product as Record<string, unknown>)[field.key] ?? ''"
           @change="onProduct(field, $event)"
         />
+        <small v-if="hiddenHint(field)" class="editor__hint">{{ hiddenHint(field) }}</small>
       </label>
     </fieldset>
     <fieldset>

@@ -19,7 +19,7 @@ const lowStock = computed(() => !soldOut.value && props.options.remaining <= pro
     layout="vertical"
     :accent-color="options.accentColor"
     :show-original-price="true"
-    :show-meta="false"
+    :show-meta="options.showMeta"
     :price-prefix="options.priceLabel"
   >
     <template #media-overlay>
