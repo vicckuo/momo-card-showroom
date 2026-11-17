@@ -32,6 +32,10 @@ commit 中 Agent 參與撰寫的都加上 `Co-authored-by: Claude`。
 | 15:56 | 人 | 決定：寫 README、修兩個 code smell；**另外要求所有輸入欄位加上限，避免數字無限增長、超出 JS 安全整數範圍** | — |
 | 15:56–15:58 | Agent | 上限集中在 `LIMITS`，schema 與編輯器共用（存檔超限也會被擋）；數字欄位型別強制宣告 min/max、文字欄位強制 maxLength。另修 feature envy（variant 宣告 `gridSpan`）與 `CardPatch` 型別 | `d368cfe` |
 
+| 16:09 | 人 | 撰寫並 commit README「我的審查重點」 | `f845b69` |
+| 16:18 | 人 | 審查 `sample.html` 時追問「錯誤處理」區塊的用意 | — |
+| 16:19 | Agent | 說明用意（嵌入在別人的頁面，壞資料要被擋下、錯誤不擴散），並指出缺口：錯誤訊息正式環境的購物者也看得到、沒有回報監控。人決定這次只在 README 記錄限制與演進方向，不改程式 | 本次 commit |
+
 ### 這次協作的觀察
 - Agent 實作速度快，單元測試也都通過，但**單元測試是在「先註冊、再載入」的順序下跑的**，沒有涵蓋真實頁面的 import 順序。
 - Agent 的端對端驗證只走了「showroom → sample.html」這條路徑，漏掉「showroom 重新整理」。

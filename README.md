@@ -127,6 +127,7 @@ public/sample.html     嵌入範例
 - `<momo-card>` bundle 含 Vue runtime，約 171 KB（gzip 56 KB），對單純嵌入一張卡偏重
 - 每個 `<momo-card>` 的 shadow root 各有一份 `<style>`；很多張卡時可改用 `adoptedStyleSheets`
 - 真站分析只有一天的首頁樣本
+- `<momo-card>` 收到錯誤的 `card-id` 或 `config` 時，會直接在卡片位置顯示錯誤訊息（見 `sample.html` 第 3 區）。這方便整合時除錯，但正式環境的購物者也會看到，目前沒有區分開發 / 正式模式，也沒有回報到監控系統
 
 ## 後續演進方向
 
@@ -135,7 +136,8 @@ public/sample.html     嵌入範例
 3. **Design token**：顏色、字級、間距抽成 token，與 momo 的 design system 對齊
 4. **嵌入 bundle 瘦身**：卡片改用 Lit 或原生 web component 重寫渲染層，registry 與 schema 保留
 5. **資料來源抽象**：`storage.ts` 的介面已是 `KeyValueStore`，可換成後端 API，加上樂觀更新與衝突處理
-6. **Schema 驅動的文件**：由 registry 自動產生每種卡片的欄位文件與 Storybook
+6. **嵌入錯誤的可觀測性**：正式環境不顯示錯誤訊息，改為隱藏卡片或顯示佔位區塊，並發出事件（如 `momo-card:error`）回報到 error tracking；開發模式才顯示紅框訊息
+7. **Schema 驅動的文件**：由 registry 自動產生每種卡片的欄位文件與 Storybook
 
 ## AI / Agent 協作
 
