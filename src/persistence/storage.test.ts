@@ -43,7 +43,7 @@ describe('card persistence', () => {
     const store = memoryStore({
       [STORAGE_KEY]: JSON.stringify({ schemaVersion: SCHEMA_VERSION, cards: [broken, editedSecond] }),
     })
-    expect(loadCards(store, seedCards)).toEqual([seedCards[0], editedSecond])
+    expect(loadCards(store, seedCards).slice(0, 2)).toEqual([seedCards[0], editedSecond])
   })
 
   it('still renders when storage access throws (private mode / blocked site data)', () => {
@@ -54,5 +54,15 @@ describe('card persistence', () => {
     }
     expect(loadCards(throwing, seedCards)).toEqual(seedCards)
     expect(saveCards(throwing, seedCards)).toBe(false)
+  })
+
+  it('shows cards added in a newer release to users who already have saved edits', () => {
+    const editedFirst = { ...seedCards[0], product: { ...seedCards[0].product, price: 1 } }
+    const store = memoryStore({
+      [STORAGE_KEY]: JSON.stringify({ schemaVersion: SCHEMA_VERSION, cards: [editedFirst] }),
+    })
+    const loaded = loadCards(store, seedCards)
+    expect(loaded[0]).toEqual(editedFirst)
+    expect(loaded.map((c) => c.id)).toEqual(seedCards.map((c) => c.id))
   })
 })

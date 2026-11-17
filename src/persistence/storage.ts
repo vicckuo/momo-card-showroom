@@ -20,6 +20,7 @@ export interface KeyValueStore {
  * 讀取卡片。localStorage 視為不可信輸入：
  * - 沒資料 / 壞 JSON / 未知版本 → 回 seed
  * - 個別壞卡 → 用同 id 的 seed 取代；沒有對應 seed 就丟棄
+ * - seed 有、存檔沒有的卡（新版本新增）→ 補在最後
  * - 讀取時拋錯（隱私模式、被封鎖）→ 回 seed，頁面照常顯示
  */
 export function loadCards(store: KeyValueStore, seed: readonly CardInstance[]): CardInstance[] {
@@ -33,12 +34,17 @@ export function loadCards(store: KeyValueStore, seed: readonly CardInstance[]): 
   if (!migrated) return [...seed]
 
   const seedById = new Map(seed.map((card) => [card.id, card]))
-  return migrated.cards.flatMap((rawCard) => {
+  const stored = migrated.cards.flatMap((rawCard) => {
     const card = normalizeCard(rawCard)
     if (card) return [card]
     const fallback = seedById.get(idOf(rawCard))
     return fallback ? [fallback] : []
   })
+
+  // 新版本加入的 seed 卡片要出現在舊使用者畫面上，不能被舊存檔「蓋掉」
+  const storedIds = new Set(stored.map((card) => card.id))
+  const added = seed.filter((card) => !storedIds.has(card.id))
+  return [...stored, ...added]
 }
 
 export function saveCards(store: KeyValueStore, cards: readonly CardInstance[]): boolean {
