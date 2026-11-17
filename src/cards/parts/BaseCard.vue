@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { computed } from 'vue'
+import { placeholderImage } from '../../data/placeholder'
 import type { Product } from '../schema'
 import PriceTag from './PriceTag.vue'
 
@@ -6,7 +8,7 @@ import PriceTag from './PriceTag.vue'
  * 所有 variant 共用的骨架：圖、標語、標題、價格、評價/銷量。
  * variant 只透過 slot 加自己的區塊，不複製骨架。
  */
-defineProps<{
+const props = defineProps<{
   product: Product
   layout: 'vertical' | 'horizontal'
   accentColor: string
@@ -14,6 +16,9 @@ defineProps<{
   showMeta: boolean
   pricePrefix?: string
 }>()
+
+// 外部嵌入可能沒給圖：顯示 placeholder，不出現破圖
+const imageSrc = computed(() => props.product.imageUrl || placeholderImage(props.product.brand || '商品', 0))
 </script>
 
 <template>
@@ -23,7 +28,7 @@ defineProps<{
     :style="{ '--mc-accent': accentColor }"
   >
     <div class="mc-card__media">
-      <img :src="product.imageUrl" :alt="product.title" loading="lazy" />
+      <img :src="imageSrc" :alt="product.title" loading="lazy" />
       <slot name="media-overlay" />
     </div>
     <div class="mc-card__body">

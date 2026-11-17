@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>momo-card 嵌入範例</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 24px; background: #fafafa; color: #222; }
+    .row { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; max-width: 900px; }
+    code { background: #eee; padding: 2px 4px; border-radius: 3px; }
+    /* 外部頁面的全域樣式不會影響卡片（shadow DOM 隔離） */
+    h3 { color: green; }
+  </style>
+  <script src="./embed/momo-card.js"></script>
+</head>
+<body>
+  <h1>&lt;momo-card&gt; 嵌入範例</h1>
+
+  <h2>1. 用 card-id 讀 showroom 的設定</h2>
+  <p>在 showroom 修改卡片後，這裡會即時同步（同網域共用 localStorage）。</p>
+  <div class="row">
+    <momo-card card-id="detergent-capsule"></momo-card>
+    <momo-card card-id="perfume-flash"></momo-card>
+    <momo-card card-id="latte-ticket"></momo-card>
+  </div>
+
+  <h2>2. 用 config 直接帶入資料（不依賴 storage，可跨網域）</h2>
+  <div class="row">
+    <momo-card config='{"id":"inline-demo","variant":"flash-sale","product":{"title":"無線降噪耳機","brand":"聲學實驗室","imageUrl":"","price":1490,"originalPrice":3990,"promoText":"今日限定","ratingCount":0,"salesLabel":""},"options":{"remaining":12}}'></momo-card>
+  </div>
+
+  <h2>3. 錯誤處理</h2>
+  <div class="row">
+    <momo-card card-id="does-not-exist"></momo-card>
+    <momo-card config='{"broken": true}'></momo-card>
+  </div>
+</body>
+</html>
