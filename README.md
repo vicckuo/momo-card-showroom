@@ -15,6 +15,7 @@ npm run build && npm run preview  # 打包並啟動預覽
 ```
 
 打開：
+
 - Showroom：<http://localhost:4173/>
 - 嵌入範例：<http://localhost:4173/sample.html>
 
@@ -23,25 +24,25 @@ npm run build && npm run preview  # 打包並啟動預覽
 
 ## 功能
 
-| 需求 | 實作 |
-|---|---|
-| 列出所有商品卡 / 展示單一商品卡 | `/` 列表（可依類型篩選），`/card/:id` 單卡預覽 |
-| 商品卡細節調整介面 | 單卡頁右側編輯器，欄位依卡片類型自動產生 |
-| Browser-side Persistence | localStorage，含格式版本號、逐張驗證、跨分頁同步 |
-| sample html | `public/sample.html`，用 `<script>` 載入 `<momo-card>` web component |
-| Bonus：Reusable Card Architecture | 所有卡片共用 `BaseCard` 骨架，variant 只透過 slot 加自己的區塊 |
-| Bonus：Schema / Plugin Extensibility | variant registry：新增卡片類型 = 註冊一次，不改核心程式 |
-| Bonus：State Consistency Strategy | 見下方「狀態一致性」 |
+| 需求                                 | 實作                                                                 |
+| ------------------------------------ | -------------------------------------------------------------------- |
+| 列出所有商品卡 / 展示單一商品卡      | `/` 列表（可依類型篩選），`/card/:id` 單卡預覽                       |
+| 商品卡細節調整介面                   | 單卡頁右側編輯器，欄位依卡片類型自動產生                             |
+| Browser-side Persistence             | localStorage，含格式版本號、逐張驗證、跨分頁同步                     |
+| sample html                          | `public/sample.html`，用 `<script>` 載入 `<momo-card>` web component |
+| Bonus：Reusable Card Architecture    | 所有卡片共用 `BaseCard` 骨架，variant 只透過 slot 加自己的區塊       |
+| Bonus：Schema / Plugin Extensibility | variant registry：新增卡片類型 = 註冊一次，不改核心程式              |
+| Bonus：State Consistency Strategy    | 見下方「狀態一致性」                                                 |
 
 ## 真站觀察
 
 2026-11-17 用 Playwright 開 momo 首頁，整理出三種卡片與一種版型（細節與文字樣本見 `docs/DESIGN.md` §1，截圖在 `docs/momo-home-reference.jpg`）：
 
-| 卡片 | 真站特徵 |
-|---|---|
-| `standard` 一般卡 | 促銷標語、【品牌】標題、售價 + 原價刪除線、評價數、總銷量、活動標籤（如「登記」）；另有**橫式版型**（今日精選，圖左文右） |
-| `flash-sale` 限時搶購卡 | 「限搶價」前綴、折數徽章、「最後 N 組」 |
-| `ranking` 排行卡 | TOP N 名次徽章、類型標籤（如「電子票券★即買即用」） |
+| 卡片                    | 真站特徵                                                                                                                  |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `standard` 一般卡       | 促銷標語、【品牌】標題、售價 + 原價刪除線、評價數、總銷量、活動標籤（如「登記」）；另有**橫式版型**（今日精選，圖左文右） |
+| `flash-sale` 限時搶購卡 | 「限搶價」前綴、折數徽章、「最後 N 組」                                                                                   |
+| `ranking` 排行卡        | TOP N 名次徽章、類型標籤（如「電子票券★即買即用」）                                                                       |
 
 **限制：** 只看了一天的首頁。商品詳情頁、搜尋結果頁、直播頁的卡片沒有分析。商品與品牌為虛構，圖片是本機產生的 placeholder，不使用 momo 素材、不呼叫 momo API。
 
@@ -86,17 +87,17 @@ public/sample.html     嵌入範例
 
 ## 關鍵決策與取捨
 
-| 決策 | 選擇 | 考慮過但沒選 | 理由 |
-|---|---|---|---|
-| 卡片擴充 | Registry（plugin） | `if (type === …)` 分支 | 新增卡片不改核心；代價是多一層抽象 |
-| 驗證 | zod，型別由 schema 推導 | 手寫型別 + 手寫檢查 | localStorage 與嵌入屬性都是不可信輸入；型別與驗證不會分岔 |
-| 編輯器 | 依欄位定義自動產生 | 每種卡寫一個編輯器；JSON Schema 表單套件 | 新卡不用寫編輯器；套件對這個規模太重。代價是不支援巢狀欄位 |
-| 狀態管理 | 一個 composable（`useCards`） | Pinia | 只有一份狀態，不值得多一個依賴 |
-| 持久化 | localStorage | IndexedDB | 資料量小、同步 API 夠用 |
-| 嵌入 | Vue `defineCustomElement` 打包成 IIFE | Lit 重寫；iframe | 卡片元件 app 與嵌入共用同一份；代價是 bundle 含 Vue runtime（171 KB，gzip 56 KB） |
-| 樣式隔離 | shadow DOM + 同一份 `cards.css` | CSS-in-JS；scoped CSS | 外部頁面的 CSS 不會影響卡片，app 與嵌入樣式不分岔 |
-| 折數 | 無條件進位（3.81 折顯示 3.9 折） | 跟真站一樣捨去（顯示 3.8 折） | 捨去會讓折扣看起來比實際更划算，有不實廣告疑慮。這是刻意與真站不同 |
-| 欄位上限 | `LIMITS` 一張表，schema 與編輯器共用 | 只在 input 加 `max` | 只靠 input 擋不住手改的存檔；超大數字會超出 JS 安全整數範圍 |
+| 決策     | 選擇                                  | 考慮過但沒選                             | 理由                                                                              |
+| -------- | ------------------------------------- | ---------------------------------------- | --------------------------------------------------------------------------------- |
+| 卡片擴充 | Registry（plugin）                    | `if (type === …)` 分支                   | 新增卡片不改核心；代價是多一層抽象                                                |
+| 驗證     | zod，型別由 schema 推導               | 手寫型別 + 手寫檢查                      | localStorage 與嵌入屬性都是不可信輸入；型別與驗證不會分岔                         |
+| 編輯器   | 依欄位定義自動產生                    | 每種卡寫一個編輯器；JSON Schema 表單套件 | 新卡不用寫編輯器；套件對這個規模太重。代價是不支援巢狀欄位                        |
+| 狀態管理 | 一個 composable（`useCards`）         | Pinia                                    | 只有一份狀態，不值得多一個依賴                                                    |
+| 持久化   | localStorage                          | IndexedDB                                | 資料量小、同步 API 夠用                                                           |
+| 嵌入     | Vue `defineCustomElement` 打包成 IIFE | Lit 重寫；iframe                         | 卡片元件 app 與嵌入共用同一份；代價是 bundle 含 Vue runtime（171 KB，gzip 56 KB） |
+| 樣式隔離 | shadow DOM + 同一份 `cards.css`       | CSS-in-JS；scoped CSS                    | 外部頁面的 CSS 不會影響卡片，app 與嵌入樣式不分岔                                 |
+| 折數     | 無條件進位（3.81 折顯示 3.9 折）      | 跟真站一樣捨去（顯示 3.8 折）            | 捨去會讓折扣看起來比實際更划算，有不實廣告疑慮。這是刻意與真站不同                |
+| 欄位上限 | `LIMITS` 一張表，schema 與編輯器共用  | 只在 input 加 `max`                      | 只靠 input 擋不住手改的存檔；超大數字會超出 JS 安全整數範圍                       |
 
 ## 狀態一致性
 
@@ -143,4 +144,10 @@ public/sample.html     嵌入範例
 
 ## 我的審查重點
 
-> TODO（郭峻豪本人填寫，送出前刪除這行）：用自己的話寫這次審查了什麼、做了哪些判斷、從 AI 的產出裡抓到什麼。
+這次我把自己定位成監督 AI 的維護者：方向與取捨由我決定，實作主要交給 Agent，我負責驗證結果並決定下一步。
+
+- **先定方向再開工**：讀完 Agent 的分析後選了題目 B，技術棧用我最熟的 Vue 3 + TypeScript，方便我審查每一段程式。設計筆記我確認過才允許第一個 commit，也決定 commit 要保留 Agent co-author 紀錄，讓協作過程可以追溯。
+- **親自操作產品，不只看測試**：Agent 回報測試全過、也做了端對端驗證，但我實際在 showroom 填「評價數」「銷量文字」時，發現卡片不會更新。追下去是兩個問題，其中一個會在重新整理後用預設資料覆蓋使用者的編輯。單元測試沒抓到，是因為測試的模組載入順序跟真實頁面不同。這讓我確認：AI 產出的驗證要涵蓋真實使用路徑，不能只看測試是否通過。
+- **用不同角度、全新脈絡的審查交叉檢查**：我先要求做一輪程式整理審查，再用沒有對話脈絡的 agent 跑 code review，避免審查者被實作者的思路帶著走。審查報告我沒有全收：其中一條「橫式版型沒實作」查證後是錯的，沒有採納；也有幾項判斷成本高於效益而刻意略過，理由寫在協作紀錄。
+- **補上 AI 沒想到的邊界**：我要求所有輸入欄位都要有上限。數字無限增長會超出 JS 安全整數範圍，也會撐破版面。上限放在 schema 層，編輯器和讀取存檔共用同一組數字，手改的存檔也擋得住。
+- **交付風險**：考量公司郵件可能擋程式碼附件，我另外準備了 private GitHub repo 當備案。
