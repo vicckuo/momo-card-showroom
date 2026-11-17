@@ -6,13 +6,23 @@ import { clearCards, loadCards, saveCards, subscribeToExternalChanges } from './
 /**
  * showroom 的唯一狀態來源。所有寫入都經過這裡 → storage.ts，
  * 外部分頁的改動透過 storage event 重新載入，避免兩份狀態分岔。
+ *
+ * 延遲到第一次 useCards() 才讀 storage：若在 import 時就讀，
+ * 會早於 main.ts 的 registerBuiltinVariants()（ES module 的 import 先執行），
+ * 所有存檔都被當成未知 variant 而回退成 seed，下一次編輯再把 seed 寫回去覆蓋使用者資料。
  */
-const cards = ref<CardInstance[]>(loadCards(window.localStorage, seedCards))
+const cards = ref<CardInstance[]>([])
 const saveFailed = ref(false)
+let loaded = false
 
-subscribeToExternalChanges(() => {
+function ensureLoaded(): void {
+  if (loaded) return
+  loaded = true
   cards.value = loadCards(window.localStorage, seedCards)
-})
+  subscribeToExternalChanges(() => {
+    cards.value = loadCards(window.localStorage, seedCards)
+  })
+}
 
 function persist(next: CardInstance[]): void {
   cards.value = next
@@ -20,6 +30,8 @@ function persist(next: CardInstance[]): void {
 }
 
 export function useCards() {
+  ensureLoaded()
+
   function updateCard(id: string, patch: { product?: Partial<CardInstance['product']>; options?: Record<string, unknown> }): void {
     persist(
       cards.value.map((card) =>
