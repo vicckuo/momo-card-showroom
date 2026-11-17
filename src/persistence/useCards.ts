@@ -1,15 +1,15 @@
 import { readonly, ref } from 'vue'
 import type { CardInstance } from '../cards/schema'
 import { seedCards } from '../data/seed'
-import { clearCards, loadCards, saveCards, subscribeToExternalChanges } from './storage'
+import { browserStore, clearCards, loadCards, saveCards, subscribeToExternalChanges } from './storage'
 
 /**
  * showroom 的唯一狀態來源。所有寫入都經過這裡 → storage.ts，
  * 外部分頁的改動透過 storage event 重新載入，避免兩份狀態分岔。
  *
- * 延遲到第一次 useCards() 才讀 storage：若在 import 時就讀，
- * 會早於 main.ts 的 registerBuiltinVariants()（ES module 的 import 先執行），
- * 所有存檔都被當成未知 variant 而回退成 seed，下一次編輯再把 seed 寫回去覆蓋使用者資料。
+ * 註冊順序的問題已在根源處理（storage.ts import 即保證 variant 已註冊）。
+ * 這裡仍延遲到第一次 useCards() 才讀 storage：只有用到卡片的頁面才付讀取成本，
+ * 測試也能在呼叫前準備好 storage。
  */
 const cards = ref<CardInstance[]>([])
 const saveFailed = ref(false)
@@ -18,15 +18,15 @@ let loaded = false
 function ensureLoaded(): void {
   if (loaded) return
   loaded = true
-  cards.value = loadCards(window.localStorage, seedCards)
+  cards.value = loadCards(browserStore(), seedCards)
   subscribeToExternalChanges(() => {
-    cards.value = loadCards(window.localStorage, seedCards)
+    cards.value = loadCards(browserStore(), seedCards)
   })
 }
 
 function persist(next: CardInstance[]): void {
   cards.value = next
-  saveFailed.value = !saveCards(window.localStorage, next)
+  saveFailed.value = !saveCards(browserStore(), next)
 }
 
 export function useCards() {
@@ -52,7 +52,7 @@ export function useCards() {
   }
 
   function resetAll(): void {
-    clearCards(window.localStorage)
+    clearCards(browserStore())
     cards.value = [...seedCards]
   }
 

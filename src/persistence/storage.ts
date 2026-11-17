@@ -1,3 +1,6 @@
+import { z } from 'zod'
+// 讀取前確保內建 variant 已註冊（import 即註冊），與呼叫端的載入順序無關
+import '../cards'
 import { normalizeCard } from '../cards/registry'
 import type { CardInstance } from '../cards/schema'
 
@@ -5,10 +8,9 @@ export const STORAGE_KEY = 'momo-card-showroom'
 /** 儲存格式版本。格式改變時 +1，並在 migrate() 補上轉換。 */
 export const SCHEMA_VERSION = 1
 
-interface Persisted {
-  schemaVersion: number
-  cards: unknown[]
-}
+const persistedSchema = z.object({ schemaVersion: z.number(), cards: z.array(z.unknown()) })
+type Persisted = z.infer<typeof persistedSchema>
+const cardIdSchema = z.object({ id: z.string() })
 
 export interface KeyValueStore {
   getItem(key: string): string | null
@@ -24,7 +26,33 @@ export interface KeyValueStore {
  * - 讀取時拋錯（隱私模式、被封鎖）→ 回 seed，頁面照常顯示
  */
 export function loadCards(store: KeyValueStore, seed: readonly CardInstance[]): CardInstance[] {
+  return cardsFromRaw(safeRead(store), seed)
+}
+
+/**
+ * 同一頁有很多 <momo-card> 時共用解析結果：storage 字串沒變就回傳同一個陣列，
+ * 不必每張卡都重新 JSON.parse + 驗證全部卡片；回傳同一個物件也讓沒變的卡不會重新渲染。
+ */
+let sharedCache: { raw: string | null; seed: readonly CardInstance[]; cards: CardInstance[] } | null = null
+
+export function loadCardsShared(store: KeyValueStore, seed: readonly CardInstance[]): CardInstance[] {
   const raw = safeRead(store)
+  if (sharedCache && sharedCache.raw === raw && sharedCache.seed === seed) return sharedCache.cards
+  const cards = cardsFromRaw(raw, seed)
+  sharedCache = { raw, seed, cards }
+  return cards
+}
+
+/** 瀏覽器的 localStorage；被封鎖（隱私模式、站台資料停用）時改用不保存的空 store。 */
+export function browserStore(): KeyValueStore {
+  try {
+    return window.localStorage
+  } catch {
+    return { getItem: () => null, setItem: () => {}, removeItem: () => {} }
+  }
+}
+
+function cardsFromRaw(raw: string | null, seed: readonly CardInstance[]): CardInstance[] {
   if (raw === null) return [...seed]
 
   const persisted = parse(raw)
@@ -86,15 +114,8 @@ function safeRead(store: KeyValueStore): string | null {
 
 function parse(raw: string): Persisted | null {
   try {
-    const value: unknown = JSON.parse(raw)
-    if (
-      typeof value === 'object' && value !== null &&
-      typeof (value as Persisted).schemaVersion === 'number' &&
-      Array.isArray((value as Persisted).cards)
-    ) {
-      return value as Persisted
-    }
-    return null
+    const result = persistedSchema.safeParse(JSON.parse(raw))
+    return result.success ? result.data : null
   } catch {
     return null
   }
@@ -107,7 +128,6 @@ function migrate(persisted: Persisted): Persisted | null {
 }
 
 function idOf(rawCard: unknown): string {
-  return typeof rawCard === 'object' && rawCard !== null && typeof (rawCard as { id?: unknown }).id === 'string'
-    ? (rawCard as { id: string }).id
-    : ''
+  const result = cardIdSchema.safeParse(rawCard)
+  return result.success ? result.data.id : ''
 }

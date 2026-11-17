@@ -34,3 +34,4 @@
 .mc-tag { font-size: 12px; color: var(--mc-accent); border: 1px solid var(--mc-accent); border-radius: 3px; padding: 0 4px; align-self: flex-start; }
 .mc-stock { font-size: 12px; color: #fff; background: var(--mc-accent); border-radius: 10px; padding: 2px 8px; align-self: flex-start; }
 .mc-stock--low { background: #e60012; }
+.mc-unknown { padding: 12px; border: 1px dashed #e60012; color: #e60012; font-size: 13px; }

@@ -1,10 +1,11 @@
 import { z } from 'zod'
 import type { CardVariant } from '../registry'
+import { accentColorField, hexColorSchema, hiddenWhenMetaOff, showMetaField } from './shared'
 import FlashSaleCard from './FlashSaleCard.vue'
 
 /** 限時搶購卡：真站特徵為「限搶價」前綴、折數、「最後 N 組」稀缺提示。 */
 export const flashSaleOptionsSchema = z.object({
-  accentColor: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+  accentColor: hexColorSchema,
   priceLabel: z.string(),
   remaining: z.number().int().nonnegative(),
   lowStockThreshold: z.number().int().nonnegative(),
@@ -27,14 +28,15 @@ export const flashSaleVariant: CardVariant<FlashSaleOptions> = {
     showMeta: false,
   },
   fields: [
-    { key: 'accentColor', label: '主題色', kind: 'color' },
+    accentColorField,
     { key: 'priceLabel', label: '價格標示', kind: 'text' },
     { key: 'remaining', label: '剩餘組數', kind: 'number', min: 0 },
     { key: 'lowStockThreshold', label: '低庫存門檻', kind: 'number', min: 0 },
     { key: 'showDiscount', label: '顯示折數', kind: 'boolean' },
-    { key: 'showMeta', label: '顯示評價 / 銷量', kind: 'boolean' },
+    showMetaField,
   ],
   component: FlashSaleCard,
+  hiddenProductFields: hiddenWhenMetaOff,
 }
 
 /**

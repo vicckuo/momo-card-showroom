@@ -14,30 +14,23 @@ const productFields: readonly FieldDef[] = [
   { key: 'title', label: '商品名稱', kind: 'text' },
   { key: 'promoText', label: '促銷標語', kind: 'text' },
   { key: 'price', label: '售價', kind: 'number', min: 0 },
-  { key: 'originalPrice', label: '原價', kind: 'number', min: 0 },
+  { key: 'originalPrice', label: '原價', kind: 'number', min: 0, optional: true },
   { key: 'ratingCount', label: '評價數', kind: 'number', min: 0 },
   { key: 'salesLabel', label: '銷量文字', kind: 'text' },
 ]
 
-const optionFields = computed(() => getVariant(props.card.variant)?.fields ?? [])
+const variant = computed(() => getVariant(props.card.variant))
+const optionFields = computed(() => variant.value?.fields ?? [])
 
-/**
- * 約定：評價數 / 銷量由每個 variant 的 showMeta 選項控制顯示。
- * 關閉時在欄位旁提示，避免「改了資料卡片沒變」被誤以為沒存到。
- */
-const META_FIELDS = new Set(['ratingCount', 'salesLabel'])
-function hiddenHint(field: FieldDef): string {
-  return META_FIELDS.has(field.key) && props.card.options.showMeta === false
-    ? '目前不顯示：請勾選下方「顯示評價 / 銷量」'
-    : ''
-}
+/** 由 variant 宣告目前會隱藏哪些商品欄位；編輯器不需知道任何 variant 的選項名稱。 */
+const hiddenFields = computed(() => new Set<string>(variant.value?.hiddenProductFields?.(props.card.options) ?? []))
 
 function readValue(source: Record<string, unknown>, field: FieldDef, event: Event): unknown {
   const input = event.target as HTMLInputElement
   if (field.kind === 'boolean') return input.checked
   if (field.kind === 'number') {
-    // 空字串代表清空（如原價），不要變成 0 造成「原價 $0」
-    if (input.value === '') return field.key === 'originalPrice' ? undefined : source[field.key]
+    // 選填欄位清空 = 移除值（不要變成 0 造成「原價 $0」）；必填欄位清空則保留原值
+    if (input.value === '') return field.optional ? undefined : source[field.key]
     const n = Number(input.value)
     return Number.isFinite(n) && n >= 0 ? Math.round(n) : source[field.key]
   }
@@ -65,7 +58,7 @@ function onOption(field: FieldDef, event: Event) {
           :value="(card.product as Record<string, unknown>)[field.key] ?? ''"
           @change="onProduct(field, $event)"
         />
-        <small v-if="hiddenHint(field)" class="editor__hint">{{ hiddenHint(field) }}</small>
+        <small v-if="hiddenFields.has(field.key)" class="editor__hint">目前的卡片選項不顯示這個欄位</small>
       </label>
     </fieldset>
     <fieldset>

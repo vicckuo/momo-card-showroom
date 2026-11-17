@@ -1,11 +1,11 @@
 import type { Component } from 'vue'
 import type { z } from 'zod'
-import { cardInstanceSchema, type CardInstance } from './schema'
+import { cardInstanceSchema, type CardInstance, type Product } from './schema'
 
 /** 編輯器欄位定義：編輯器依此自動產生控制項，新 variant 不用寫編輯器。 */
 export type FieldDef =
   | { key: string; label: string; kind: 'text' }
-  | { key: string; label: string; kind: 'number'; min?: number; max?: number }
+  | { key: string; label: string; kind: 'number'; min?: number; max?: number; optional?: boolean }
   | { key: string; label: string; kind: 'boolean' }
   | { key: string; label: string; kind: 'select'; choices: readonly string[] }
   | { key: string; label: string; kind: 'color' }
@@ -17,6 +17,8 @@ export interface CardVariant<O extends Record<string, unknown> = Record<string, 
   defaults: O
   fields: readonly FieldDef[]
   component: Component
+  /** 依目前選項，這張卡不會顯示哪些商品欄位。編輯器據此提示，避免「改了沒反應」。 */
+  hiddenProductFields?: (options: O) => readonly (keyof Product)[]
 }
 
 const variants = new Map<string, CardVariant>()

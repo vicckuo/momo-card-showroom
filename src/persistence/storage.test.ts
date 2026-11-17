@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { clearVariantsForTest } from '../cards/registry'
 import { registerBuiltinVariants } from '../cards'
 import { seedCards } from '../data/seed'
-import { loadCards, saveCards, SCHEMA_VERSION, STORAGE_KEY, type KeyValueStore } from './storage'
+import { loadCards, loadCardsShared, saveCards, SCHEMA_VERSION, STORAGE_KEY, type KeyValueStore } from './storage'
 
 function memoryStore(initial: Record<string, string> = {}): KeyValueStore & { data: Record<string, string> } {
   const data = { ...initial }
@@ -64,5 +64,17 @@ describe('card persistence', () => {
     const loaded = loadCards(store, seedCards)
     expect(loaded[0]).toEqual(editedFirst)
     expect(loaded.map((c) => c.id)).toEqual(seedCards.map((c) => c.id))
+  })
+
+  it('reuses the parsed cards across many embeds until storage actually changes', () => {
+    const store = memoryStore()
+    saveCards(store, seedCards)
+    const first = loadCardsShared(store, seedCards)
+    expect(loadCardsShared(store, seedCards)).toBe(first)
+
+    saveCards(store, seedCards.map((c) => ({ ...c, product: { ...c.product, price: 7 } })))
+    const next = loadCardsShared(store, seedCards)
+    expect(next).not.toBe(first)
+    expect(next[0].product.price).toBe(7)
   })
 })

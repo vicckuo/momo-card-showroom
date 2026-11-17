@@ -7,12 +7,12 @@ function registerOnce<O extends Record<string, unknown>>(variant: CardVariant<O>
   if (!getVariant(variant.type)) registerCardVariant(variant)
 }
 
-/**
- * 內建 variant 的唯一註冊處。app 與 web component 都從這裡初始化，
- * 確保兩邊認得的卡片種類一致。可重複呼叫。
- */
+/** 內建 variant 的唯一註冊處。可重複呼叫（測試清空註冊表後會再呼叫）。 */
 export function registerBuiltinVariants(): void {
   registerOnce(standardVariant)
   registerOnce(flashSaleVariant)
   registerOnce(rankingVariant)
 }
+
+// import 這個模組即完成註冊：任何讀資料的程式只要 import 它，就不會遇到「還沒註冊」的順序問題
+registerBuiltinVariants()

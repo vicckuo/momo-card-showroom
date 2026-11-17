@@ -4,7 +4,7 @@ import CardRenderer from '../cards/CardRenderer.vue'
 import { normalizeCard } from '../cards/registry'
 import type { CardInstance } from '../cards/schema'
 import { seedCards } from '../data/seed'
-import { loadCards, subscribeToExternalChanges } from '../persistence/storage'
+import { browserStore, loadCardsShared, subscribeToExternalChanges } from '../persistence/storage'
 
 /**
  * <momo-card card-id="..."> ：讀 showroom 存在 localStorage 的同一份資料（同網域）。
@@ -26,16 +26,8 @@ function resolve(): void {
     if (!card.value) error.value = 'config 格式錯誤'
     return
   }
-  card.value = loadCards(safeStorage(), seedCards).find((c) => c.id === props.cardId) ?? null
+  card.value = loadCardsShared(browserStore(), seedCards).find((c) => c.id === props.cardId) ?? null
   if (!card.value) error.value = `找不到卡片：${props.cardId ?? '(未指定 card-id)'}`
-}
-
-function safeStorage(): Storage | { getItem: () => null; setItem: () => void; removeItem: () => void } {
-  try {
-    return window.localStorage
-  } catch {
-    return { getItem: () => null, setItem: () => {}, removeItem: () => {} }
-  }
 }
 
 let unsubscribe: (() => void) | undefined

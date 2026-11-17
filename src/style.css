@@ -13,7 +13,6 @@ body { margin: 0; background: #f5f5f5; font-family: system-ui, -apple-system, 'P
 .editor fieldset { border: 1px solid #ddd; border-radius: 6px; margin: 0 0 12px; background: #fff; }
 .editor__row { display: grid; grid-template-columns: 120px 1fr; gap: 8px; align-items: center; margin: 6px 0; font-size: 14px; }
 .warn { color: #e60012; font-size: 13px; }
-.mc-unknown { padding: 12px; border: 1px dashed #e60012; color: #e60012; font-size: 13px; }
 @media (max-width: 640px) {
   .detail { grid-template-columns: 1fr; }
   .grid__wide { grid-column: span 1; }
